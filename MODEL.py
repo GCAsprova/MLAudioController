@@ -1,4 +1,6 @@
 import os
+from datetime import datetime
+
 import numpy as np
 import librosa
 import tensorflow as tf
@@ -58,7 +60,7 @@ for f, l ,s in zip(shifted_files, shifted_labels, shift_secs):
 train_ds = tf.data.Dataset.from_tensor_slices((augmented_files,specaugment_flags,augmented_secs, augmented_labels))
 train_ds = train_ds.map(Dp.map_fn, num_parallel_calls=tf.data.AUTOTUNE)
 #train_ds = train_ds.map(lambda files, labels: Dp.tf_wrapper(files, labels, training=True), num_parallel_calls=tf.data.AUTOTUNE)
-train_ds = train_ds.shuffle(750).batch(8).prefetch(tf.data.AUTOTUNE)
+train_ds = train_ds.shuffle(1000).batch(8).prefetch(tf.data.AUTOTUNE)
 
 test_ds = tf.data.Dataset.from_tensor_slices((test_files, test_labels))
 test_ds = test_ds.map(lambda fi, la: Dp.tf_wrapper(fi,0.0, la, training=False), num_parallel_calls=tf.data.AUTOTUNE)
@@ -90,7 +92,7 @@ model = tf.keras.Sequential([
     tf.keras.layers.MaxPooling2D((2, 2)),
     tf.keras.layers.Dropout(0.3),
 
-    # Flatten or GAP
+    #GAP
     tf.keras.layers.GlobalAveragePooling2D(),
     tf.keras.layers.Dense(64, activation='relu'),
     tf.keras.layers.Dropout(0.4),
@@ -102,23 +104,33 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
               loss='sparse_categorical_crossentropy',
               metrics=['accuracy'])
 
+lr_callback = tf.keras.callbacks.ReduceLROnPlateau(
+    monitor='val_loss',   # metric to watch
+    factor=0.5,          # LR multiplier (reduce by half)
+    patience=3,          # wait 3 epochs with no improvement
+    verbose=1,           # print messages when LR changes
+    min_lr=1e-6          # minimum LR allowed
+)
+
+early_stopping = tf.keras.callbacks.EarlyStopping(
+    monitor='val_loss',     # metric to watch, e.g. 'val_loss' or 'val_accuracy'
+    patience=5,             # number of epochs to wait before stopping
+    verbose=1,              # print message when stopping
+    restore_best_weights=True  # restore model weights from the epoch with the best value
+)
+
 history = model.fit(
     train_ds,
     validation_data=test_ds,
-    epochs=30
+    epochs=30 ,
+    callbacks=[lr_callback, early_stopping]
 )
 
-# Load a new audio file
-base_dir = Path(__file__).parent
-test_file = base_dir / "test_data"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODELS_PATH = os.path.join(BASE_DIR, 'models')
 
+timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+model_filename = f"model_{timestamp}.h5"
+my_model_path = os.path.join(MODELS_PATH, model_filename)
 
-
-
-# Predict
-for audio_path in test_file.glob("*.wav"):
-    mfcc_input = Dp.preprocess_single_file(str(audio_path))
-    pred = model.predict(mfcc_input)
-    predicted_class = np.argmax(pred)
-    confidence = pred[0][predicted_class]
-    print(f"File: {audio_path.name} --> Predicted label: {class_labels[predicted_class]} --> Confidence: {confidence}")
+model.save(my_model_path)
