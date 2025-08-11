@@ -13,7 +13,7 @@ n_fft = int(Da.SR * 0.025)
 expected_frames = 148
 
 # Map Dataset
-def load_and_preprocess(file_path, shift_sec = 0.0, training=True):
+def load_and_preprocess(file_path, shift_sec = 0.0, training=True , spec_augmentation = False):
     # Load audio
     audio, _ = librosa.load(file_path.numpy().decode('utf-8'), sr=Da.SR)
 
@@ -38,7 +38,7 @@ def load_and_preprocess(file_path, shift_sec = 0.0, training=True):
         mfcc = mfcc[:, :expected_frames]
 
     # Apply SpecAugment only during training
-    if training:
+    if training and spec_augmentation:
         mfcc = Da.spec_augment(mfcc)
 
     # Add channel dim
@@ -47,8 +47,8 @@ def load_and_preprocess(file_path, shift_sec = 0.0, training=True):
     return mfcc.astype(np.float32)
 
 
-def tf_wrapper(file_path,shift_sec, label, training=True):
-    mfcc = tf.py_function(load_and_preprocess, inp=[file_path,shift_sec, training], Tout=tf.float32)
+def tf_wrapper(file_path,shift_sec, label, training=True , spec_augmentation = False):
+    mfcc = tf.py_function(load_and_preprocess, inp=[file_path,shift_sec, training,spec_augmentation], Tout=tf.float32)
     mfcc.set_shape([Da.N_MFCC,expected_frames, 1])
     return mfcc, label
 
@@ -64,12 +64,20 @@ def preprocess_single_file(filepath):
         audio = audio[:AUDIO_LENGTH]
 
     # No random augmentations for testing — just extract MFCC
-    mfcc = librosa.feature.mfcc(y=audio, sr=Da.SR, n_mfcc=Da.N_MFCC)
+    mfcc = librosa.feature.mfcc(y=audio, sr=Da.SR, n_mfcc=Da.N_MFCC ,n_fft = n_fft , hop_length = hop_length)
     mfcc = (mfcc - np.mean(mfcc)) / np.std(mfcc)  # Normalize
+
+    if mfcc.shape[1] < expected_frames:
+        pad_width = expected_frames - mfcc.shape[1]
+        mfcc = np.pad(mfcc, ((0, 0), (0, pad_width)), mode='constant')
+    elif mfcc.shape[1] > expected_frames:
+        mfcc = mfcc[:, :expected_frames]
+
     mfcc = mfcc[..., np.newaxis]  # Add channel dim
     mfcc = np.expand_dims(mfcc, axis=0)  # Add batch dim
+
     return mfcc
 
-def map_fn(file_shift,shift_secs, label):
-    return tf_wrapper(file_shift, shift_secs, label, training=False)
+def map_fn(file,specaugment,shift_secs, label):
+    return tf_wrapper(file, shift_secs, label, training=True,spec_augmentation=specaugment)
 

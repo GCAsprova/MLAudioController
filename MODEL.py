@@ -7,10 +7,15 @@ from pathlib import Path
 import DataAugmentation as Da
 import DataPipeline as Dp
 
-SHIFT_TIMES = [0.0,+0.2,-0.2]
+SHIFT_TIMES = [0.0,+0.2,-0.2,0.1,-0.1]
 shifted_files = []
 shifted_labels = []
 shift_secs = []
+augmented_files = []
+augmented_labels = []
+augmented_secs = []
+specaugment_flags = []
+num_augmentations = 6
 
 #Load File paths and Labels
 
@@ -36,8 +41,21 @@ for f,l in zip(train_files, train_labels):
         shifted_labels.append(l)
         shift_secs.append(shift)
 
+for f, l ,s in zip(shifted_files, shifted_labels, shift_secs):
+    # add original (no augmentation)
+    augmented_files.append(f)
+    augmented_labels.append(l)
+    augmented_secs.append(s)
+    specaugment_flags.append(False)# False means no SpecAugment
+    # add multiple SpecAugment versions
+    for _ in range(num_augmentations):
+        augmented_files.append(f)
+        augmented_labels.append(l)
+        augmented_secs.append(s)
+        specaugment_flags.append(True)# True means SpecAugment
+
 # Build Dataset
-train_ds = tf.data.Dataset.from_tensor_slices((shifted_files,shift_secs, shifted_labels))
+train_ds = tf.data.Dataset.from_tensor_slices((augmented_files,specaugment_flags,augmented_secs, augmented_labels))
 train_ds = train_ds.map(Dp.map_fn, num_parallel_calls=tf.data.AUTOTUNE)
 #train_ds = train_ds.map(lambda files, labels: Dp.tf_wrapper(files, labels, training=True), num_parallel_calls=tf.data.AUTOTUNE)
 train_ds = train_ds.shuffle(750).batch(16).prefetch(tf.data.AUTOTUNE)
@@ -56,32 +74,30 @@ model = tf.keras.Sequential([
 
     tf.keras.layers.Conv2D(32, (3, 3), activation='relu', padding='same'),
     tf.keras.layers.Conv2D(32, (3, 3), activation='relu', padding='same'),
-    #tf.keras.layers.BatchNormalization(),
+
     tf.keras.layers.MaxPooling2D((2, 2)),
-    tf.keras.layers.Dropout(0.3),
+    tf.keras.layers.Dropout(0.4),
 
     tf.keras.layers.Conv2D(64, (3, 3), activation='relu', padding='same'),
     tf.keras.layers.Conv2D(64, (3, 3), activation='relu', padding='same'),
-    #tf.keras.layers.BatchNormalization(),
+
     tf.keras.layers.MaxPooling2D((2, 2)),
-    tf.keras.layers.Dropout(0.3),
+    tf.keras.layers.Dropout(0.4),
 
     tf.keras.layers.Conv2D(128, (3, 3), activation='relu', padding='same'),
-    #tf.keras.layers.BatchNormalization(),
+
     tf.keras.layers.MaxPooling2D((2, 2)),
-    #tf.keras.layers.GlobalAveragePooling2D(),
-    tf.keras.layers.Dropout(0.3),
+
+    tf.keras.layers.Dropout(0.4),
 
     tf.keras.layers.Dense(64, activation='relu'),
     tf.keras.layers.BatchNormalization(),
     tf.keras.layers.GlobalAveragePooling2D(),
 
-    #tf.keras.layers.Dense(64, activation='relu'),
-    #tf.keras.layers.Dropout(0.3),
     tf.keras.layers.Dense(len(class_labels), activation='softmax')
 ])
 
-model.compile(optimizer='adam',
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
               loss='sparse_categorical_crossentropy',
               metrics=['accuracy'])
 
@@ -93,7 +109,7 @@ history = model.fit(
 
 # Load a new audio file
 base_dir = Path(__file__).parent
-test_file = base_dir / "data"/ "a"
+test_file = base_dir / "test_data"
 
 
 
