@@ -7,6 +7,10 @@ from pathlib import Path
 import DataAugmentation as Da
 import DataPipeline as Dp
 
+SHIFT_TIMES = [0.0,+0.2,-0.2]
+shifted_files = []
+shifted_labels = []
+shift_secs = []
 
 #Load File paths and Labels
 
@@ -26,13 +30,20 @@ train_files, test_files, train_labels, test_labels = train_test_split(
     filepaths, labels, test_size=0.2, stratify=labels, random_state=42
 )
 
+for f,l in zip(train_files, train_labels):
+    for shift in SHIFT_TIMES:
+        shifted_files.append(f)
+        shifted_labels.append(l)
+        shift_secs.append(shift)
+
 # Build Dataset
-train_ds = tf.data.Dataset.from_tensor_slices((train_files, train_labels))
-train_ds = train_ds.map(lambda f, l: Dp.tf_wrapper(f, l, training=True), num_parallel_calls=tf.data.AUTOTUNE)
-train_ds = train_ds.shuffle(500).batch(16).prefetch(tf.data.AUTOTUNE)
+train_ds = tf.data.Dataset.from_tensor_slices((shifted_files,shift_secs, shifted_labels))
+train_ds = train_ds.map(Dp.map_fn, num_parallel_calls=tf.data.AUTOTUNE)
+#train_ds = train_ds.map(lambda files, labels: Dp.tf_wrapper(files, labels, training=True), num_parallel_calls=tf.data.AUTOTUNE)
+train_ds = train_ds.shuffle(750).batch(16).prefetch(tf.data.AUTOTUNE)
 
 test_ds = tf.data.Dataset.from_tensor_slices((test_files, test_labels))
-test_ds = test_ds.map(lambda f, l: Dp.tf_wrapper(f, l, training=False), num_parallel_calls=tf.data.AUTOTUNE)
+test_ds = test_ds.map(lambda files, labels: Dp.tf_wrapper(files,0.0, labels, training=False), num_parallel_calls=tf.data.AUTOTUNE)
 test_ds = test_ds.batch(16).prefetch(tf.data.AUTOTUNE)
 
 # First, find width of MFCC from one sample
@@ -61,8 +72,6 @@ model = tf.keras.Sequential([
     #tf.keras.layers.GlobalAveragePooling2D(),
     tf.keras.layers.Dropout(0.3),
 
-
-
     tf.keras.layers.Dense(64, activation='relu'),
     tf.keras.layers.BatchNormalization(),
     tf.keras.layers.GlobalAveragePooling2D(),
@@ -79,12 +88,12 @@ model.compile(optimizer='adam',
 history = model.fit(
     train_ds,
     validation_data=test_ds,
-    epochs=100
+    epochs=30
 )
 
 # Load a new audio file
 base_dir = Path(__file__).parent
-test_file = base_dir / "test_data"
+test_file = base_dir / "data"/ "a"
 
 
 

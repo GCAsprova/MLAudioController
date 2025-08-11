@@ -1,16 +1,12 @@
-import os
 import numpy as np
 import librosa
-import tensorflow as tf
-from sklearn.model_selection import train_test_split
-from pathlib import Path
 
-SR = 16000
+#Configs
+SR = 48000
 N_MFCC = 40
 MAX_MASK_PCT = 0.1
 N_FREQ_MASKS = 1
 N_TIME_MASKS = 1
-
 
 #Data-Augmentation
 
