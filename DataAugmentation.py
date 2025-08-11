@@ -42,3 +42,11 @@ def spec_augment(mfcc):
         mfcc_aug[:, t0:t0 + t] = 0
 
     return mfcc_aug
+
+def pitch_shift(audio, sr, max_steps=2.0):
+    steps = np.random.uniform(-max_steps, max_steps)
+    return librosa.effects.pitch_shift(audio, sr=sr, n_steps=steps)
+
+def add_noise(audio, noise_level=0.005):
+    noise = np.random.randn(len(audio)) * noise_level
+    return audio + noise

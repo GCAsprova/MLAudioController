@@ -58,11 +58,11 @@ for f, l ,s in zip(shifted_files, shifted_labels, shift_secs):
 train_ds = tf.data.Dataset.from_tensor_slices((augmented_files,specaugment_flags,augmented_secs, augmented_labels))
 train_ds = train_ds.map(Dp.map_fn, num_parallel_calls=tf.data.AUTOTUNE)
 #train_ds = train_ds.map(lambda files, labels: Dp.tf_wrapper(files, labels, training=True), num_parallel_calls=tf.data.AUTOTUNE)
-train_ds = train_ds.shuffle(750).batch(16).prefetch(tf.data.AUTOTUNE)
+train_ds = train_ds.shuffle(750).batch(8).prefetch(tf.data.AUTOTUNE)
 
 test_ds = tf.data.Dataset.from_tensor_slices((test_files, test_labels))
-test_ds = test_ds.map(lambda files, labels: Dp.tf_wrapper(files,0.0, labels, training=False), num_parallel_calls=tf.data.AUTOTUNE)
-test_ds = test_ds.batch(16).prefetch(tf.data.AUTOTUNE)
+test_ds = test_ds.map(lambda fi, la: Dp.tf_wrapper(fi,0.0, la, training=False), num_parallel_calls=tf.data.AUTOTUNE)
+test_ds = test_ds.batch(8).prefetch(tf.data.AUTOTUNE)
 
 # First, find width of MFCC from one sample
 sample_audio, _ = librosa.load(filepaths[0], sr=Da.SR)
@@ -72,27 +72,28 @@ MFCC_WIDTH = sample_mfcc.shape[1]
 model = tf.keras.Sequential([
     tf.keras.layers.Input(shape=(Da.N_MFCC, MFCC_WIDTH, 1)),
 
-    tf.keras.layers.Conv2D(32, (3, 3), activation='relu', padding='same'),
-    tf.keras.layers.Conv2D(32, (3, 3), activation='relu', padding='same'),
-
-    tf.keras.layers.MaxPooling2D((2, 2)),
-    tf.keras.layers.Dropout(0.4),
-
-    tf.keras.layers.Conv2D(64, (3, 3), activation='relu', padding='same'),
-    tf.keras.layers.Conv2D(64, (3, 3), activation='relu', padding='same'),
-
-    tf.keras.layers.MaxPooling2D((2, 2)),
-    tf.keras.layers.Dropout(0.4),
-
-    tf.keras.layers.Conv2D(128, (3, 3), activation='relu', padding='same'),
-
-    tf.keras.layers.MaxPooling2D((2, 2)),
-
-    tf.keras.layers.Dropout(0.4),
-
-    tf.keras.layers.Dense(64, activation='relu'),
+    # 1.CONV
+    tf.keras.layers.Conv2D(16, (3, 3), activation='relu', padding='same'),
     tf.keras.layers.BatchNormalization(),
+    tf.keras.layers.MaxPooling2D((2, 2)),
+    tf.keras.layers.Dropout(0.25),
+
+    # 2.CONV
+    tf.keras.layers.Conv2D(32, (3, 3), activation='relu', padding='same'),
+    tf.keras.layers.BatchNormalization(),
+    tf.keras.layers.MaxPooling2D((2, 2)),
+    tf.keras.layers.Dropout(0.25),
+
+    # 3.CONV
+    tf.keras.layers.Conv2D(64, (3, 3), activation='relu', padding='same'),
+    tf.keras.layers.BatchNormalization(),
+    tf.keras.layers.MaxPooling2D((2, 2)),
+    tf.keras.layers.Dropout(0.3),
+
+    # Flatten or GAP
     tf.keras.layers.GlobalAveragePooling2D(),
+    tf.keras.layers.Dense(64, activation='relu'),
+    tf.keras.layers.Dropout(0.4),
 
     tf.keras.layers.Dense(len(class_labels), activation='softmax')
 ])

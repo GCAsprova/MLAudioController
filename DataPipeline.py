@@ -2,6 +2,8 @@ import os
 import numpy as np
 import librosa
 import tensorflow as tf
+from librosa.effects import pitch_shift
+
 import DataAugmentation as Da
 
 #Configs
@@ -27,6 +29,10 @@ def load_and_preprocess(file_path, shift_sec = 0.0, training=True , spec_augment
     if training and (shift_sec != 0.0):
         audio = Da.time_shift(audio,shift_sec)
 
+    if training:
+        if np.random.rand() < 0.5: audio = Da.add_noise(audio)
+        if np.random.rand() < 0.5: audio = Da.pitch_shift(audio ,Da.SR )
+
     # Extract MFCC
     mfcc = librosa.feature.mfcc(y=audio, sr=Da.SR, n_mfcc=Da.N_MFCC ,n_fft = n_fft , hop_length = hop_length)
     mfcc = (mfcc - np.mean(mfcc)) / np.std(mfcc)  # Normalize
@@ -40,6 +46,9 @@ def load_and_preprocess(file_path, shift_sec = 0.0, training=True , spec_augment
     # Apply SpecAugment only during training
     if training and spec_augmentation:
         mfcc = Da.spec_augment(mfcc)
+
+
+
 
     # Add channel dim
     mfcc = mfcc[..., np.newaxis]
