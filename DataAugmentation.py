@@ -2,7 +2,7 @@ import numpy as np
 import librosa
 
 #Configs
-SR = 48000
+SR = 16000
 N_MFCC = 40
 MAX_MASK_PCT = 0.1
 N_FREQ_MASKS = 1

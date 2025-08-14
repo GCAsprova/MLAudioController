@@ -3,7 +3,6 @@ import numpy as np
 import librosa
 import tensorflow as tf
 import DataAugmentation as Da
-from Main import modelname
 
 #Configs
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -12,7 +11,8 @@ DATA_PATH = os.path.join(BASE_DIR, 'data')
 AUDIO_LENGTH = int(Da.SR * 1.5)  # 1.5 seconds fixed
 hop_length = int(Da.SR * 0.010)
 n_fft = int(Da.SR * 0.025)
-expected_frames = 148
+expected_frames = 1+int((AUDIO_LENGTH - n_fft)//hop_length)
+modelname = "model_20250812-004521.h5"
 
 # Map Dataset
 def load_and_preprocess(file_path, shift_sec = 0.0, training=True , spec_augmentation = False):
