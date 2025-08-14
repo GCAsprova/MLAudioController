@@ -2,12 +2,12 @@ import os
 import numpy as np
 import librosa
 import tensorflow as tf
-from librosa.effects import pitch_shift
-
 import DataAugmentation as Da
+from Main import modelname
 
 #Configs
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODELS_PATH = os.path.join(BASE_DIR, 'models')
 DATA_PATH = os.path.join(BASE_DIR, 'data')
 AUDIO_LENGTH = int(Da.SR * 1.5)  # 1.5 seconds fixed
 hop_length = int(Da.SR * 0.010)
@@ -47,9 +47,6 @@ def load_and_preprocess(file_path, shift_sec = 0.0, training=True , spec_augment
     if training and spec_augmentation:
         mfcc = Da.spec_augment(mfcc)
 
-
-
-
     # Add channel dim
     mfcc = mfcc[..., np.newaxis]
 
@@ -61,12 +58,11 @@ def tf_wrapper(file_path,shift_sec, label, training=True , spec_augmentation = F
     mfcc.set_shape([Da.N_MFCC,expected_frames, 1])
     return mfcc, label
 
+def map_fn(file,specaugment,shift_secs, label):
+    return tf_wrapper(file, shift_secs, label, training=True,spec_augmentation=specaugment)
 
-#test_files
-def preprocess_single_file(filepath):
-    audio, _ = librosa.load(filepath, sr=Da.SR)
 
-    # Ensure fixed length (1.5s)
+def preprocess_live_audio(audio):
     if len(audio) < AUDIO_LENGTH:
         audio = np.pad(audio, (0, AUDIO_LENGTH - len(audio)))
     elif len(audio) > AUDIO_LENGTH:
@@ -87,6 +83,8 @@ def preprocess_single_file(filepath):
 
     return mfcc
 
-def map_fn(file,specaugment,shift_secs, label):
-    return tf_wrapper(file, shift_secs, label, training=True,spec_augmentation=specaugment)
+def load_model():
+    model_path = os.path.join(MODELS_PATH, modelname)
+    model = tf.keras.models.load_model(model_path)
+    return model
 
