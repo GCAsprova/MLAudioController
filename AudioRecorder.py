@@ -1,17 +1,18 @@
+import os
 import sounddevice as sd
 import numpy as np
-import DataAugmentation as Da
-import DataPipeline as Dp
 from pynput import keyboard
-import os
 
-class_labels = sorted(os.listdir(Dp.DATA_PATH))
+import DataPipeline as Dp
+import CONFIG as cfg
+
+class_labels = sorted(os.listdir(cfg.DATA_PATH))
 
 def record_and_process():
     print("Recording...")
     audio = sd.rec(
-        Dp.AUDIO_LENGTH,
-        samplerate=Da.SR,
+        cfg.AUDIO_LENGTH,
+        samplerate=cfg.SR,
         channels=1,
         dtype='float32'
     )

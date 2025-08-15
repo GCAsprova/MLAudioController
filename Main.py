@@ -1,6 +1,6 @@
 from pynput import keyboard
+
 import AudioRecorder as Ar
-import os
 
 def main():
     print("Press SPACE to record and process...")
