@@ -72,6 +72,8 @@ Choose between 16kHz or 48kHz versions by setting modelname.
 
 48kHz models generally gave me better results but takes 2–3× longer to train.
 
+(Every pretrained version has its weakpoints. If one doesnt work for you try a different one, but none are perfect because of a lack of training data.)
+
 ### Clip length
 Adjust AUDIO_LENGTH_SECONDS for longer/shorter training and recording clips.
 
@@ -92,7 +94,7 @@ Must match training sampling rate for correct classification.
 
     Set your desired SamplingRate (16kHz or 48kHz).
 
-4.  Run MODEL.py (Per execution the standard saves 50 models to /models)
+4.  Run MODEL.py (Per execution the standard saves 5 models to /models)
 
 ## 🐞 Known Issues
 
