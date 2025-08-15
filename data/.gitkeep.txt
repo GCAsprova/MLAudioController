@@ -1,2 +1,0 @@
-
-# This file exists so Git tracks the empty folder
