@@ -14,6 +14,8 @@ class_labels = sorted(os.listdir(cfg.DATA_PATH))
 saved_model = Dp.load_model()
 keyboard = keyboard.Controller()
 
+
+#Record Audio Based on CONFIG Settings and preprocess
 def record_and_process():
     print("Recording...")
     audio = sd.rec(
@@ -28,6 +30,8 @@ def record_and_process():
     processed_audio = Dp.preprocess_live_audio(audio)
     return processed_audio
 
+
+#Do prediction with mfcc on seleced model
 def predict_from_mfcc(mfcc,model):
     pred = model.predict_on_batch(mfcc)
     predicted_class = np.argmax(pred)
@@ -36,25 +40,23 @@ def predict_from_mfcc(mfcc,model):
     print(f"Predicted ClassID: {predicted_class} --> Label: {predicted_class_label}  --> Confidence: {confidence}")
     return predicted_class
 
-
+#Standard procedure during execution
 def on_press(key):
     try:
         if key == cfg.RECORD_BUTTON:
-            mfcc = record_and_process()
-            prediction_class = predict_from_mfcc(mfcc,saved_model)
-            press_key_for_class(prediction_class)
+            mfcc = record_and_process() #Record Audio and extract mfcc
+            prediction_class = predict_from_mfcc(mfcc,saved_model) #Predict Class of Audio
+            press_key_for_class(prediction_class) #Generate Keyboard Input
 
     except AttributeError:
         pass  # Ignore special keys
 
-
+#Generate Keyboard Input based on Class_ID
 def press_key_for_class(class_id):
-    """Press mapped key for given class ID"""
     key = cfg.CLASS_TO_KEY.get(class_id)
     if key:
         keyboard.press(key)
         time.sleep(0.05)  # short press
         keyboard.release(key)
-        #print(f"[ACTION] Class {class_id} → Key '{key}'")
     else:
         print(f"[WARNING] No key mapped for class {class_id}")

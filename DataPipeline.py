@@ -7,7 +7,7 @@ import CONFIG as cfg
 import DataAugmentation as Da
 
 
-# Map Dataset
+
 def load_and_preprocess(file_path, shift_sec = 0.0, training=True , spec_augmentation = False):
     # Load audio
     audio, _ = librosa.load(file_path.numpy().decode('utf-8'), sr=cfg.SR)
@@ -18,10 +18,11 @@ def load_and_preprocess(file_path, shift_sec = 0.0, training=True , spec_augment
     else:
         audio = audio[:cfg.AUDIO_LENGTH]
 
-    # Apply time shift only during training
+    # Apply augmentation only during training
     if training and (shift_sec != 0.0):
         audio = Da.time_shift(audio,shift_sec)
 
+    #Randomly apply noise or shift pitch to mfcc
     if training:
         if np.random.rand() < 0.5: audio = Da.add_noise(audio)
         if np.random.rand() < 0.5: audio = Da.pitch_shift(audio ,cfg.SR )
@@ -40,7 +41,7 @@ def load_and_preprocess(file_path, shift_sec = 0.0, training=True , spec_augment
     if training and spec_augmentation:
         mfcc = Da.spec_augment(mfcc)
 
-    # Add channel dim
+    # Add channel dimension
     mfcc = mfcc[..., np.newaxis]
 
     return mfcc.astype(np.float32)
@@ -71,8 +72,8 @@ def preprocess_live_audio(audio):
     elif mfcc.shape[1] > cfg.expected_frames:
         mfcc = mfcc[:, :cfg.expected_frames]
 
-    mfcc = mfcc[..., np.newaxis]  # Add channel dim
-    mfcc = np.expand_dims(mfcc, axis=0)  # Add batch dim
+    mfcc = mfcc[..., np.newaxis]  # Add channel dimension
+    mfcc = np.expand_dims(mfcc, axis=0)  # Add batch dimension
 
     return mfcc
 

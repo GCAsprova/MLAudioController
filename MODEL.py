@@ -28,9 +28,12 @@ for label in class_labels:
 
 filepaths = np.array(filepaths)
 labels = np.array(labels)
+
+#Lists for storing fold metrics
 acc_per_fold = []
 loss_per_fold = []
 
+#K-Fold-Cross-Validation
 for fold_no, (train_idx , val_idx) in enumerate(skf.split(filepaths,labels),start=1):
     print(f'Training fold {fold_no}')
 
@@ -119,7 +122,7 @@ for fold_no, (train_idx , val_idx) in enumerate(skf.split(filepaths,labels),star
     )
 
     early_stopping = tf.keras.callbacks.EarlyStopping(
-        monitor='val_loss',     # metric to watch, e.g. 'val_loss' or 'val_accuracy'
+        monitor='val_loss',     # metric to watch
         patience=5,             # number of epochs to wait before stopping
         verbose=1,              # print message when stopping
         restore_best_weights=True  # restore model weights from the epoch with the best value
