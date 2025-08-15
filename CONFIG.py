@@ -35,15 +35,15 @@ DATA_PATH = os.path.join(BASE_DIR, 'data') #Data folder
 
 
 #Model
-modelname = "model_v1_48khz.h5" #Modelweights to use during execution
-SHIFT_TIMES = [0.0,+0.2,-0.2,0.1,-0.1,+0.3,-0.3] #How many and what timeshifts should be applied to each base sample
+modelname = "model_v1_48khz.h5" #Saved model weights to use during execution
+SHIFT_TIMES = [0.0,+0.2,-0.2,0.1,-0.1,+0.3,-0.3] #How many and what timeshifts should be applied to each base sample during training
 num_augmentations = 5 #How many Specaugmentations per TimeShifted Sample
 k = 5 # Number of folds for KFoldCrossValidation
 
 
 
 #Audio specifications
-SR = 48000  # Audio sampling rate in Hz (16 kHz is common for speech recognition)
+SR = 48000  # Audio sampling rate in Hz
 N_MFCC = 40  # Number of MFCC (Mel-Frequency Cepstral Coefficients) features to extract per frame
 
 MAX_MASK_PCT = 0.1  # Maximum percentage of the spectrogram that can be masked for data augmentation
