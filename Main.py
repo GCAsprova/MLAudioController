@@ -1,9 +1,8 @@
+import AudioRecorder as Ar
 from pynput import keyboard
 
-import AudioRecorder as Ar
-
 def main():
-    print("Press SPACE to record and process...")
+    print("Press record button to start input...")
     with keyboard.Listener(on_press=Ar.on_press) as listener:
         listener.join()
 

@@ -78,6 +78,6 @@ def preprocess_live_audio(audio):
 
 def load_model():
     model_path = os.path.join(cfg.MODELS_PATH, cfg.modelname)
-    model = tf.keras.models.load_model(model_path)
+    model = tf.keras.models.load_model(model_path, compile=False)
     return model
 

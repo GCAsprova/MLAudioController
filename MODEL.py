@@ -1,4 +1,6 @@
 import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # suppress INFO logs
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0" # optional, disable oneDNN notices
 import numpy as np
 import tensorflow as tf
 from datetime import datetime
@@ -7,8 +9,7 @@ from sklearn.model_selection import StratifiedKFold
 import DataPipeline as Dp
 import CONFIG as cfg
 
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"  # suppress INFO logs
-os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0" # optional, disable oneDNN notices
+
 
 skf = StratifiedKFold(n_splits=cfg.k, shuffle=True, random_state=42)
 

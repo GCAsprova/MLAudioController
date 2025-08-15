@@ -1,6 +1,32 @@
 import os
-
+from pynput import keyboard
 #CONFIG FILE -- Configure all variables for Training and Audioparameters here
+
+#Keybinds
+RECORD_BUTTON = keyboard.Key.f8
+
+#For letters and basic symbols just put them as characters to the corresponding class id
+#For special keys like shift, space, F1 ... F12 use keyboard.Key.shift( or space or ctrl or ...)
+
+CLASS_TO_KEY = {
+    0: '', # AudioCommand = a
+    1: '', # AudioCommand = b
+    2: keyboard.Key.down, # AudioCommand = down
+    3: '', # AudioCommand = home
+    4: '', # AudioCommand = l1
+    5: '', # AudioCommand = l2
+    6: '', # AudioCommand = l3
+    7: keyboard.Key.left, # AudioCommand = left
+    8: '', # AudioCommand = r1
+    9: '', # AudioCommand = r2
+    10: '',# AudioCommand = r3
+    11: keyboard.Key.right,# AudioCommand = right
+    12: '',# AudioCommand = select
+    13: '',# AudioCommand = start
+    14: keyboard.Key.up,# AudioCommand = up
+    15: '',# AudioCommand = x
+    16: '',# AudioCommand = y
+}
 
 #General
 BASE_DIR = os.path.dirname(os.path.abspath(__file__)) #Base Directory
