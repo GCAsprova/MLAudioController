@@ -35,7 +35,7 @@ DATA_PATH = os.path.join(BASE_DIR, 'data') #Data folder
 
 
 #Model
-modelname = "model_v2_48khz_fold4.h5" #Saved model weights to use during execution
+modelname = "model_v2_48khz_fold2.h5" #Saved model weights to use during execution
 SHIFT_TIMES = [0.0,+0.2,-0.2,0.1,-0.1,+0.3,-0.3] #How many and what timeshifts should be applied to each base sample during training
 num_augmentations = 5 #How many Specaugmentations per TimeShifted Sample
 k = 5 # Number of folds for KFoldCrossValidation
