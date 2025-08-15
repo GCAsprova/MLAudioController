@@ -14,7 +14,7 @@ Speak → Model listens → Corresponding key press is triggered.
 pip install -r requirements.txt
 ```
 
-## 🗣️ Available Speech Commands
+## 🗣️ Available Speech Commands (Controller Buttons)
 
 (Model is trained on English pronunciation)
 
