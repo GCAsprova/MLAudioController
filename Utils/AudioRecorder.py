@@ -58,5 +58,7 @@ def press_key_for_class(class_id):
         keyboard.press(key)
         time.sleep(0.05)  # short press
         keyboard.release(key)
+        print(f"Ready for next recording...")
     else:
         print(f"[WARNING] No key mapped for class {class_id}")
+        print(f"Ready for next recording...")
