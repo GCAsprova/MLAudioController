@@ -7,7 +7,7 @@ import numpy as np
 import time
 from pynput import keyboard
 
-import DataPipeline as Dp
+from Utils import DataPipeline as Dp
 import CONFIG as cfg
 
 class_labels = sorted(os.listdir(cfg.DATA_PATH))

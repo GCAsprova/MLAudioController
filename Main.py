@@ -1,4 +1,4 @@
-import AudioRecorder as Ar
+from Utils import AudioRecorder as Ar
 from pynput import keyboard
 
 def main():

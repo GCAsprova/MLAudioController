@@ -6,7 +6,7 @@ import tensorflow as tf
 from datetime import datetime
 from sklearn.model_selection import StratifiedKFold
 
-import DataPipeline as Dp
+from Utils import DataPipeline as Dp
 import CONFIG as cfg
 
 

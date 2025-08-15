@@ -4,8 +4,7 @@ import librosa
 import tensorflow as tf
 
 import CONFIG as cfg
-import DataAugmentation as Da
-
+from Utils import DataAugmentation as Da
 
 
 def load_and_preprocess(file_path, shift_sec = 0.0, training=True , spec_augmentation = False):
